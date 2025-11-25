@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+python-multipart
+requests
+beautifulsoup4
+markdown2
+reportlab
+playwright
+python-dotenv
+google-generativeai
