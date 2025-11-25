@@ -6,16 +6,34 @@ from pathlib import Path
 from io import BytesIO
 import uuid
 import os
+import sys
 
-# Local modules (backend folder is inside project root)
-from backend.crawler import crawl_website
-from backend.summarizer import summarize_domain, summarize_page
-from backend.md_generator import generate_markdown_content
-from backend.pdf_generator import md_to_pdf_better
 
-app = FastAPI(title="Website Markdown + PDF Generator", version="1.0")
+# ------------------------------------------------------
+# BASE PATH FIX (WORKS LOCALLY + RENDER)
+# ------------------------------------------------------
+CURRENT_FILE = Path(__file__).resolve()
+BASE_DIR = CURRENT_FILE.parent        # this = project root (contains frontend/, backend/)
+BACKEND_DIR = BASE_DIR / "backend"
+FRONTEND_DIR = BASE_DIR / "frontend"
+STATIC_DIR = FRONTEND_DIR / "static"
 
-# Allow CORS
+# Allow importing from backend/
+sys.path.append(str(BACKEND_DIR))
+
+
+# Import backend modules
+from crawler import crawl_website
+from summarizer import summarize_domain, summarize_page
+from md_generator import generate_markdown_content
+from pdf_generator import md_to_pdf_better
+
+
+# ------------------------------------------------------
+# FASTAPI INITIALIZATION
+# ------------------------------------------------------
+app = FastAPI(title="Website Markdown & PDF Generator", version="1.0")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
@@ -24,32 +42,41 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ---------- PATH FIX ----------
-BASE_DIR = Path(__file__).parent       # main.py is in project root
-FRONTEND_DIR = BASE_DIR / "frontend"
-STATIC_DIR = FRONTEND_DIR / "static"
 
-
-# ---------- SERVE STATIC FILES ----------
+# ------------------------------------------------------
+# STATIC FILES (CSS + JS)
+# ------------------------------------------------------
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+else:
+    print("⚠ WARNING: static/ folder NOT found at", STATIC_DIR)
 
 
-# ---------- SERVE FRONTEND INDEX ----------
+# ------------------------------------------------------
+# SERVE FRONTEND INDEX.HTML
+# ------------------------------------------------------
 @app.get("/", response_class=HTMLResponse)
 def serve_frontend():
-    index_file = FRONTEND_DIR / "index.html"
-    if not index_file.exists():
-        return "<h2>Frontend not found. Make sure frontend/index.html exists.</h2>"
-    return index_file.read_text(encoding="utf-8")
+    index_path = FRONTEND_DIR / "index.html"
+
+    if not index_path.exists():
+        return f"""
+        <h2>Frontend not found!</h2>
+        <p>Looking for file:</p>
+        <pre>{index_path}</pre>
+        """
+
+    # Read HTML content
+    return index_path.read_text(encoding="utf-8")
 
 
-# Storage for generated markdown + pdf
+# Store generated docs
 app.state.docs = {}
 
-# ----------------------------------------------------
-# GENERATE DOCS
-# ----------------------------------------------------
+
+# ------------------------------------------------------
+# GENERATE DOCUMENTATION
+# ------------------------------------------------------
 @app.post("/generate-docs")
 def generate_docs(request: Request, url: str = Query(...), max_pages: int = Query(10)):
 
@@ -74,7 +101,7 @@ def generate_docs(request: Request, url: str = Query(...), max_pages: int = Quer
 ---
 """
 
-        # Create Markdown content
+        # Generate Markdown
         _, md_text = generate_markdown_content(
             domain=url,
             pages_list_md=pages_list_md,
@@ -82,12 +109,12 @@ def generate_docs(request: Request, url: str = Query(...), max_pages: int = Quer
             page_details_md=page_details_md
         )
 
-        # Create PDF
+        # Generate PDF
         pdf_bytes = BytesIO()
         md_to_pdf_better(md_text, pdf_bytes, input_is_text=True)
         pdf_bytes.seek(0)
 
-        # Unique document ID
+        # Store
         doc_id = str(uuid.uuid4())
         app.state.docs[doc_id] = {"md": md_text, "pdf": pdf_bytes}
 
@@ -98,16 +125,16 @@ def generate_docs(request: Request, url: str = Query(...), max_pages: int = Quer
             "doc_id": doc_id,
             "view_md_url": f"{backend_url}/view-md/{doc_id}",
             "download_md_url": f"{backend_url}/download-md/{doc_id}",
-            "download_pdf_url": f"{backend_url}/download-pdf/{doc_id}"
+            "download_pdf_url": f"{backend_url}/download-pdf/{doc_id}",
         }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# ----------------------------------------------------
-# VIEW MARKDOWN
-# ----------------------------------------------------
+# ------------------------------------------------------
+# ROUTES FOR VIEW/DOWNLOAD
+# ------------------------------------------------------
 @app.get("/view-md/{doc_id}")
 def view_md(doc_id: str):
     if doc_id not in app.state.docs:
@@ -115,9 +142,6 @@ def view_md(doc_id: str):
     return PlainTextResponse(app.state.docs[doc_id]["md"])
 
 
-# ----------------------------------------------------
-# DOWNLOAD MARKDOWN
-# ----------------------------------------------------
 @app.get("/download-md/{doc_id}")
 def download_md(doc_id: str):
     if doc_id not in app.state.docs:
@@ -129,13 +153,10 @@ def download_md(doc_id: str):
     return StreamingResponse(
         md_bytes,
         media_type="text/markdown",
-        headers={"Content-Disposition": "attachment; filename=documentation.md"}
+        headers={"Content-Disposition": "attachment; filename=documentation.md"},
     )
 
 
-# ----------------------------------------------------
-# DOWNLOAD PDF
-# ----------------------------------------------------
 @app.get("/download-pdf/{doc_id}")
 def download_pdf(doc_id: str):
     if doc_id not in app.state.docs:
@@ -147,13 +168,13 @@ def download_pdf(doc_id: str):
     return StreamingResponse(
         pdf_bytes,
         media_type="application/pdf",
-        headers={"Content-Disposition": "attachment; filename=documentation.pdf"}
+        headers={"Content-Disposition": "attachment; filename=documentation.pdf"},
     )
 
 
-# ----------------------------------------------------
-# RENDER DEPLOYMENT SUPPORT
-# ----------------------------------------------------
+# ------------------------------------------------------
+# ENTRY FOR RENDER + LOCAL
+# ------------------------------------------------------
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))

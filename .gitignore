@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+
+# Environments
+venv/
+backend/venv/
+
+# Environment variables
+.env
+backend/.env
+
+# Playwright cache
+ms-playwright/
+
+# Chrome profile
+backend/real_chrome_profile/
+
+# Editor files
+.vscode/
+.idea/
+
+# System files
+Thumbs.db
+.DS_Store
