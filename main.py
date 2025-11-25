@@ -8,10 +8,10 @@ import uuid
 import os
 
 # Local modules
-from crawler import crawl_website
-from summarizer import summarize_domain, summarize_page
-from md_generator import generate_markdown_content
-from pdf_generator import md_to_pdf_better
+from backend.crawler import crawl_website
+from backend.summarizer import summarize_domain, summarize_page
+from backend.md_generator import generate_markdown_content
+from backend.pdf_generator import md_to_pdf_better
 
 app = FastAPI(title="Website Markdown + PDF Generator", version="1.0")
 
