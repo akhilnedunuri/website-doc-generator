@@ -1,10 +1,15 @@
 // =======================
 // AUTO DETECT BACKEND URL
 // =======================
+
+// 🔥 Replace this with your actual backend URL on Render
+const RENDER_BACKEND = "https://website-doc-generator.onrender.com";  
+// (Use your own Render backend URL)
+
 const BACKEND_URL =
     window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
         ? "http://127.0.0.1:8000"
-        : "https://your-render-backend-url.onrender.com";  // ← Replace after deploying
+        : RENDER_BACKEND;
 
 
 // =======================
@@ -27,7 +32,7 @@ let currentPdfDownloadUrl = "";
 // GENERATE DOCUMENTATION
 // =======================
 generateBtn.addEventListener("click", async () => {
-    const url = document.getElementById("url").value;
+    const url = document.getElementById("url").value.trim();
     const maxPages = document.getElementById("max_pages").value;
 
     if (!url) {
@@ -41,21 +46,25 @@ generateBtn.addEventListener("click", async () => {
     mdContentPre.textContent = "";
 
     try {
-        const response = await fetch(
-            `${BACKEND_URL}/generate-docs?url=${encodeURIComponent(url)}&max_pages=${maxPages}`,
-            { method: "POST" }
-        );
+        const endpoint = `${BACKEND_URL}/generate-docs?url=${encodeURIComponent(url)}&max_pages=${maxPages}`;
+
+        console.log("Calling backend:", endpoint);
+
+        const response = await fetch(endpoint, { method: "POST" });
 
         if (!response.ok) {
-            const err = await response.json();
-            throw new Error(err.detail || "Failed to generate documentation");
+            let errorMsg = "Failed to generate documentation";
+            try {
+                const err = await response.json();
+                if (err.detail) errorMsg = err.detail;
+            } catch (e) {}
+            throw new Error(errorMsg);
         }
 
         const data = await response.json();
+        messageDiv.textContent = "✅ Documentation generated successfully!";
 
-        messageDiv.textContent = "✅ Generation completed!";
-
-        // IMPORTANT FIX → URLs are already absolute!
+        // These links are already absolute URLs from backend
         currentMdUrl = data.view_md_url;
         currentMdDownloadUrl = data.download_md_url;
         currentPdfDownloadUrl = data.download_pdf_url;
@@ -63,7 +72,7 @@ generateBtn.addEventListener("click", async () => {
         actionsDiv.style.display = "block";
 
     } catch (error) {
-        console.error(error);
+        console.error("Frontend Error:", error);
         messageDiv.textContent = "❌ Error: " + error.message;
     }
 });
