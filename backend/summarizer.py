@@ -2,16 +2,27 @@ import os
 from dotenv import load_dotenv
 from google import generativeai as genai
 
-load_dotenv()
+# ----------------------------------------------------
+# Load .env from the backend folder (where this file is located)
+# ----------------------------------------------------
+env_path = os.path.join(os.path.dirname(__file__), ".env")
+load_dotenv(env_path)
+
 API_KEY = os.getenv("GOOGLE_API_KEY")
 
 if not API_KEY:
-    raise Exception("❌ GOOGLE_API_KEY missing")
+    raise Exception("❌ GOOGLE_API_KEY missing in backend/.env")
 
+# ----------------------------------------------------
+# Configure Gemini
+# ----------------------------------------------------
 genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel("gemini-2.0-flash")
 
 
+# ----------------------------------------------------
+# Summarize entire domain content
+# ----------------------------------------------------
 def summarize_domain(content: str, url: str, page_count: int):
     prompt = f"""
 You are an expert technical writer. Summarize the overall website in a medium, clean, professional format.
@@ -25,17 +36,21 @@ Generate ONLY Markdown.
 - Features must be short and meaningful.
 
 Here is the website content:
-\"\"\"
+\"\"\" 
 {content}
-\"\"\"
+\"\"\" 
 """
 
     try:
-        return model.generate_content(prompt).text
+        response = model.generate_content(prompt)
+        return response.text
     except Exception as e:
         return f"❌ Domain summary failed: {str(e)}"
 
 
+# ----------------------------------------------------
+# Summarize individual pages
+# ----------------------------------------------------
 def summarize_page(page_text: str, page_url: str):
     prompt = f"""
 You are an AI documentation writer. Summarize the page in a medium-sized, clean structure.
@@ -50,12 +65,13 @@ Generate ONLY Markdown.
 Page URL: {page_url}
 
 Page Content:
-\"\"\"
+\"\"\" 
 {page_text}
-\"\"\"
+\"\"\" 
 """
 
     try:
-        return model.generate_content(prompt).text
+        response = model.generate_content(prompt)
+        return response.text
     except Exception as e:
         return f"❌ Page summary failed: {str(e)}"
