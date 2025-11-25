@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Website Markdown & PDF Generator</title>
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Website Markdown & PDF Generator</h1>
+
+        <label>Website URL:</label>
+        <input type="text" id="url" placeholder="https://example.com">
+
+        <label>Max Pages to Crawl:</label>
+        <input type="number" id="max_pages" value="10">
+
+        <button id="generateBtn">Generate Documentation</button>
+
+        <div id="message"></div>
+
+        <div id="actions" style="display:none;">
+            <button id="viewMdBtn">View Markdown</button>
+            <button id="downloadMdBtn">Download Markdown</button>
+            <button id="downloadPdfBtn">Download PDF</button>
+        </div>
+
+        <pre id="mdContent" style="display:none;"></pre>
+    </div>
+
+    <script src="static/script.js"></script>
+</body>
+</html>
