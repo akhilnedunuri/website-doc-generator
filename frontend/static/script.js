@@ -80,9 +80,9 @@ generateBtn.addEventListener("click", async () => {
         updateMessage("✅ Documentation generated successfully!", false);
 
         // Links use the base URL provided by the backend, which handles http/https/port correctly
-        currentMdUrl = data.view_md_url;
-        currentMdDownloadUrl = data.download_md_url;
-        currentPdfDownloadUrl = data.download_pdf_url;
+        currentMdUrl = `${BACKEND_URL}${data.view_md_url}`;
+        currentMdDownloadUrl = `${BACKEND_URL}${data.download_md_url}`;
+        currentPdfDownloadUrl = `${BACKEND_URL}${data.download_pdf_url}`;
 
         actionsDiv.style.display = "block";
 
