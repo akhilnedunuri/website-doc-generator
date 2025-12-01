@@ -15,6 +15,8 @@ RUN apt-get update && apt-get install -y \
     libatk-bridge2.0-0 \
     libatk1.0-0 \
     libgtk-3-0 \
+    libx11-6 \
+    libx11-data \
     libx11-xcb1 \
     libxcomposite1 \
     libxdamage1 \
@@ -22,41 +24,37 @@ RUN apt-get update && apt-get install -y \
     libasound2 \
     fonts-liberation \
     libgbm1 \
-    libpango1.0-0 \
+    libpangocairo-1.0-0 \
     libcairo2 \
-    libxshmfence1 \
     libxshmfence1 \
     libxkbcommon0 \
     libdrm2 \
     libxext6 \
     libxfixes3 \
-    xvfb \
     && rm -rf /var/lib/apt/lists/*
 
 # -------------------------------
-# Set working directory
+# Working directory
 # -------------------------------
 WORKDIR /app
 
 # -------------------------------
-# Copy Python dependencies
+# Install Python deps + Playwright
 # -------------------------------
 COPY requirements.txt .
 
-# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Playwright & Chromium installation
-RUN pip install playwright
-RUN playwright install --with-deps chromium
+RUN pip install --no-cache-dir playwright
+RUN playwright install chromium --with-deps
 
 # -------------------------------
-# Copy application code
+# Copy project
 # -------------------------------
 COPY . .
 
 # -------------------------------
-# Expose port (Coolify uses PORT env automatically)
+# Expose port (Coolify uses $PORT automatically)
 # -------------------------------
 EXPOSE 8000
 
