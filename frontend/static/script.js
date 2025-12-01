@@ -4,7 +4,7 @@
 
 // 🔥 CRITICAL: Replace this with your actual, live backend URL on Render.
 // If your service is down or the URL is wrong, the frontend will fail to fetch.
-const RENDER_BACKEND = "https://website-doc-generator.onrender.com"; 
+const GLOBAL_URL = "https://web-doc-generator.pbshope.in"; 
 
 const BACKEND_URL =
     window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
