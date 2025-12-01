@@ -37,25 +37,20 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # -----------------------------------------------------
-# Copy dependencies
+# Install Python dependencies
 # -----------------------------------------------------
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # -----------------------------------------------------
-# Copy app code
+# Copy application code
 # -----------------------------------------------------
 COPY . .
 
 # -----------------------------------------------------
-# Add runtime install script
+# Make run.sh executable
 # -----------------------------------------------------
-RUN echo '#!/bin/sh\n\
-pip install playwright && playwright install chromium --with-deps\n\
-uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}\n' \
-> /app/start.sh
-
-RUN chmod +x /app/start.sh
+RUN chmod +x backend/run.sh
 
 # -----------------------------------------------------
 # Expose port
@@ -63,6 +58,6 @@ RUN chmod +x /app/start.sh
 EXPOSE 8000
 
 # -----------------------------------------------------
-# RUN APPLICATION
+# Start server (Playwright installed at runtime)
 # -----------------------------------------------------
-CMD ["/app/start.sh"]
+CMD ["sh", "-c", "pip install playwright && playwright install chromium --with-deps && sh backend/run.sh"]
