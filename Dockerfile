@@ -41,6 +41,8 @@ WORKDIR /app
 # -----------------------------------------------------
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install playwright
+RUN playwright install chromium --with-deps
 
 # -----------------------------------------------------
 # Copy application code
@@ -58,6 +60,6 @@ RUN chmod +x backend/run.sh
 EXPOSE 8000
 
 # -----------------------------------------------------
-# Start server (Playwright installed at runtime)
+# Start server
 # -----------------------------------------------------
-CMD ["sh", "-c", "pip install playwright && playwright install chromium --with-deps && sh backend/run.sh"]
+CMD ["sh", "backend/run.sh"]
