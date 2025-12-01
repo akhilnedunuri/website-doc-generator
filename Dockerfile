@@ -37,28 +37,32 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # -----------------------------------------------------
-# Install Python dependencies
+# Copy dependencies
 # -----------------------------------------------------
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # -----------------------------------------------------
-# Install Playwright browsers (Chromium only)
-# -----------------------------------------------------
-RUN pip install playwright
-RUN playwright install chromium
-
-# -----------------------------------------------------
-# Copy application code
+# Copy app code
 # -----------------------------------------------------
 COPY . .
 
 # -----------------------------------------------------
-# Expose internal port
+# Add runtime install script
+# -----------------------------------------------------
+RUN echo '#!/bin/sh\n\
+pip install playwright && playwright install chromium --with-deps\n\
+uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}\n' \
+> /app/start.sh
+
+RUN chmod +x /app/start.sh
+
+# -----------------------------------------------------
+# Expose port
 # -----------------------------------------------------
 EXPOSE 8000
 
 # -----------------------------------------------------
-# START COMMAND (Chromium needs --no-sandbox)
+# RUN APPLICATION
 # -----------------------------------------------------
-CMD ["sh", "-c", "export PLAYWRIGHT_BROWSERS_PATH=0 && uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["/app/start.sh"]
