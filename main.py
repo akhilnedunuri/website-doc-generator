@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, PlainTextResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from io import BytesIO
 import uuid
 import os
@@ -34,6 +36,7 @@ from pdf_generator import md_to_pdf_better
 # ------------------------------------------------------
 app = FastAPI(title="Website Markdown & PDF Generator", version="1.0")
 
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
@@ -42,6 +45,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+class HTTPSRedirectMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        proto = request.headers.get("x-forwarded-proto")
+        if proto == "https":
+            request.scope["scheme"] = "https"
+        response = await call_next(request)
+        return response
+
+app.add_middleware(HTTPSRedirectMiddleware)
 
 # ------------------------------------------------------
 # STATIC FILES (CSS + JS)
