@@ -9,7 +9,7 @@ const GLOBAL_URL = "https://web-doc-generator.pbshope.in";
 const BACKEND_URL =
     window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
         ? "http://127.0.0.1:8000" // Use 8000 for local uvicorn run
-        : RENDER_BACKEND;
+        : GLOBAL_URL;
 
 
 // =======================
