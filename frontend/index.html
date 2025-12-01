@@ -2,31 +2,49 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Website Markdown & PDF Generator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Doc Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="static/style.css">
 </head>
 <body>
 
     <div class="container">
-        <h1>Website Markdown & PDF Generator</h1>
+        <header>
+            <i class="fas fa-file-code icon-header"></i>
+            <h1>Website Documentation Generator</h1>
+            <p>Generate high-quality documentation (Markdown & PDF) from any website.</p>
+        </header>
 
-        <label>Website URL:</label>
-        <input type="text" id="url" placeholder="https://example.com">
+        <section class="input-form">
+            <div class="input-group">
+                <label for="url"><i class="fas fa-globe"></i> Website URL</label>
+                <input type="text" id="url" placeholder="https://example.com/blog" value="https://docs.fastapi.tiangolo.com/">
+            </div>
 
-        <label>Max Pages to Crawl:</label>
-        <input type="number" id="max_pages" value="10">
+            <div class="input-group">
+                <label for="max_pages"><i class="fas fa-list-ol"></i> Max Pages to Crawl</label>
+                <input type="number" id="max_pages" value="10" min="1">
+            </div>
 
-        <button id="generateBtn">Generate Documentation</button>
+            <button id="generateBtn" class="primary-btn">
+                <i class="fas fa-cogs"></i> Generate Documentation
+            </button>
+        </section>
 
-        <div id="message"></div>
+        <div id="message" class="status-message"></div>
 
-        <div id="actions" style="display:none;">
-            <button id="viewMdBtn">View Markdown</button>
-            <button id="downloadMdBtn">Download Markdown</button>
-            <button id="downloadPdfBtn">Download PDF</button>
-        </div>
+        <section id="actions" class="action-buttons" style="display:none;">
+            <h3>Download & View</h3>
+            <div class="button-row">
+                <button id="viewMdBtn" class="secondary-btn"><i class="fas fa-eye"></i> View Markdown</button>
+                <button id="downloadMdBtn" class="download-btn"><i class="fas fa-file-alt"></i> Download .md</button>
+                <button id="downloadPdfBtn" class="download-btn"><i class="fas fa-file-pdf"></i> Download .pdf</button>
+            </div>
+        </section>
 
-        <pre id="mdContent" style="display:none;"></pre>
+        <pre id="mdContent" class="markdown-preview" style="display:none;"></pre>
     </div>
 
     <script src="static/script.js"></script>

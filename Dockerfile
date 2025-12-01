@@ -46,7 +46,7 @@ RUN playwright install
 # Copy the rest of the project
 # -------------------------------
 COPY . .
-
+    
 # -------------------------------
 # Expose port
 # -------------------------------

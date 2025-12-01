@@ -1,56 +1,231 @@
-body {
-    font-family: Arial, sans-serif;
-    background: #f4f4f4;
-    display: flex;
-    justify-content: center;
-    padding-top: 40px;
+/* Base Styles & Dark Mode Theme */
+:root {
+    --bg-color-dark: #1e1e2f;
+    --card-color: #27293d;
+    --text-color: #f0f0f0;
+    --accent-blue: #00bcd4; /* Cyan/Teal accent */
+    --accent-hover: #00a4b8;
+    --success-color: #4CAF50;
+    --error-color: #f44336;
+    --border-color: #3d3f54;
+    --shadow-color: rgba(0, 0, 0, 0.4);
 }
 
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--bg-color-dark);
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; 
+    padding: 60px 20px;
+    min-height: 100vh;
+    margin: 0;
+}
+
+/* Container and Header */
 .container {
-    background: #fff;
-    padding: 25px;
-    border-radius: 8px;
-    width: 600px;
-    box-shadow: 0 0 10px #ccc;
+    background: var(--card-color);
+    padding: 40px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 750px;
+    box-shadow: 0 10px 30px var(--shadow-color);
+    transition: all 0.3s ease;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.icon-header {
+    font-size: 3rem;
+    color: var(--accent-blue);
+    margin-bottom: 10px;
+}
+
+h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 5px 0;
+}
+
+header p {
+    color: #b0b0b0;
+    font-weight: 300;
+}
+
+/* Input Form */
+.input-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
 }
 
 label {
-    display: block;
-    font-weight: bold;
-    margin-top: 10px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--accent-blue);
+}
+
+label i {
+    margin-right: 8px;
 }
 
 input {
     width: 100%;
-    padding: 8px;
-    margin-bottom: 10px;
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-color-dark);
+    color: var(--text-color);
+    font-size: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
+input:focus {
+    border-color: var(--accent-blue);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.3);
+}
+
+/* Buttons */
 button {
-    padding: 10px 20px;
-    margin-right: 10px;
+    padding: 12px 25px;
+    margin: 0;
     cursor: pointer;
-    background: #007bff;
-    color: #fff;
     border: none;
-    border-radius: 4px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
-button:hover {
-    background: #0056b3;
+button i {
+    margin-right: 8px;
 }
 
-#mdContent {
-    margin-top: 20px;
-    max-height: 400px;
-    overflow: auto;
-    background: #f9f9f9;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    white-space: pre-wrap;
+.primary-btn {
+    background: var(--accent-blue);
+    color: var(--bg-color-dark);
+    width: 100%;
+    margin-top: 10px;
 }
 
-#actions {
+.primary-btn:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+}
+
+/* Action Buttons Section */
+.action-buttons {
+    margin-top: 25px;
+    padding-top: 25px;
+    border-top: 1px dashed var(--border-color);
+}
+
+.action-buttons h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: var(--text-color);
+}
+
+.button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.secondary-btn {
+    background: var(--border-color);
+    color: var(--text-color);
+}
+
+.secondary-btn:hover {
+    background: #50526b;
+}
+
+.download-btn {
+    background: var(--success-color);
+    color: #fff;
+}
+
+.download-btn:hover {
+    background: #449d48;
+}
+
+/* Messages and Markdown Preview */
+.status-message {
     margin-top: 15px;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.status-message:empty {
+    padding: 0;
+}
+
+#message.success {
+    background-color: rgba(76, 175, 80, 0.2); /* Green tint */
+    color: var(--success-color);
+}
+
+#message.error {
+    background-color: rgba(244, 67, 54, 0.2); /* Red tint */
+    color: var(--error-color);
+}
+
+
+.markdown-preview {
+    margin-top: 25px;
+    max-height: 500px;
+    overflow: auto;
+    background: var(--bg-color-dark);
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    white-space: pre-wrap;
+    font-family: 'Consolas', 'Monaco', monospace; /* Monospace font for code/MD */
+    font-size: 0.95rem;
+    color: #ddd;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 600px) {
+    .container {
+        padding: 25px;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    .button-row {
+        flex-direction: column;
+    }
+
+    button {
+        width: 100%;
+        margin-right: 0;
+    }
 }

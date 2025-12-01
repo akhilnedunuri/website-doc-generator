@@ -8,3 +8,4 @@ reportlab
 playwright
 python-dotenv
 google-generativeai
+playwright

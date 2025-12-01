@@ -2,13 +2,13 @@
 // AUTO DETECT BACKEND URL
 // =======================
 
-// 🔥 Replace this with your actual backend URL on Render
-const RENDER_BACKEND = "https://website-doc-generator.onrender.com";  
-// (Use your own Render backend URL)
+// 🔥 CRITICAL: Replace this with your actual, live backend URL on Render.
+// If your service is down or the URL is wrong, the frontend will fail to fetch.
+const RENDER_BACKEND = "https://website-doc-generator.onrender.com"; 
 
 const BACKEND_URL =
     window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-        ? "http://127.0.0.1:8000"
+        ? "http://127.0.0.1:8000" // Use 8000 for local uvicorn run
         : RENDER_BACKEND;
 
 
@@ -27,6 +27,16 @@ let currentMdUrl = "";
 let currentMdDownloadUrl = "";
 let currentPdfDownloadUrl = "";
 
+// Helper to update message text and styling
+function updateMessage(text, isError = false) {
+    messageDiv.textContent = text;
+    // Clear previous classes and set new ones for visual feedback
+    messageDiv.className = "status-message " + (isError ? "error" : "success");
+}
+
+// Check if backend URL is configured correctly on load
+console.log(`Using Backend URL: ${BACKEND_URL}`);
+
 
 // =======================
 // GENERATE DOCUMENTATION
@@ -40,7 +50,7 @@ generateBtn.addEventListener("click", async () => {
         return;
     }
 
-    messageDiv.textContent = "Generating documentation... Please wait.";
+    updateMessage("⏳ Generating documentation... This may take a moment.", false); // Use neutral status first
     actionsDiv.style.display = "none";
     mdContentPre.style.display = "none";
     mdContentPre.textContent = "";
@@ -48,23 +58,28 @@ generateBtn.addEventListener("click", async () => {
     try {
         const endpoint = `${BACKEND_URL}/generate-docs?url=${encodeURIComponent(url)}&max_pages=${maxPages}`;
 
-        console.log("Calling backend:", endpoint);
-
-        const response = await fetch(endpoint, { method: "POST" });
+        const response = await fetch(endpoint, { 
+            method: "POST",
+            // Set a higher timeout in your backend configuration if the process takes too long!
+        });
 
         if (!response.ok) {
-            let errorMsg = "Failed to generate documentation";
+            let errorMsg = `Server responded with status ${response.status}.`;
             try {
+                // Try to get detailed error from the JSON body sent by FastAPI
                 const err = await response.json();
                 if (err.detail) errorMsg = err.detail;
-            } catch (e) {}
+            } catch (e) {
+                // If it wasn't JSON, just use the status message
+                errorMsg += " (No detailed error message from server)";
+            }
             throw new Error(errorMsg);
         }
 
         const data = await response.json();
-        messageDiv.textContent = "✅ Documentation generated successfully!";
+        updateMessage("✅ Documentation generated successfully!", false);
 
-        // These links are already absolute URLs from backend
+        // Links use the base URL provided by the backend, which handles http/https/port correctly
         currentMdUrl = data.view_md_url;
         currentMdDownloadUrl = data.download_md_url;
         currentPdfDownloadUrl = data.download_pdf_url;
@@ -72,8 +87,8 @@ generateBtn.addEventListener("click", async () => {
         actionsDiv.style.display = "block";
 
     } catch (error) {
-        console.error("Frontend Error:", error);
-        messageDiv.textContent = "❌ Error: " + error.message;
+        console.error("Frontend Fetch Error:", error);
+        updateMessage(`❌ Error: Could not reach the server or process the request. Details: ${error.message}`, true);
     }
 });
 
@@ -85,21 +100,23 @@ viewMdBtn.addEventListener("click", async () => {
     if (!currentMdUrl) return;
 
     try {
+        mdContentPre.textContent = "Loading Markdown...";
+        mdContentPre.style.display = "block";
+
         const response = await fetch(currentMdUrl);
-        if (!response.ok) throw new Error("Failed to fetch Markdown");
+        if (!response.ok) throw new Error(`Failed to fetch Markdown (${response.status})`);
 
         const mdText = await response.text();
         mdContentPre.textContent = mdText;
-        mdContentPre.style.display = "block";
     } catch (error) {
         console.error(error);
-        alert("Error fetching Markdown: " + error.message);
+        mdContentPre.textContent = `Error fetching Markdown: ${error.message}`;
     }
 });
 
 
 // =======================
-// DOWNLOAD FILES
+// DOWNLOAD FILES (Triggers direct download via browser)
 // =======================
 downloadMdBtn.addEventListener("click", () => {
     if (!currentMdDownloadUrl) return;
