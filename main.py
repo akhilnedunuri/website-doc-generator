@@ -3,26 +3,22 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, PlainTextResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from starlette.middleware.base import BaseHTTPMiddleware
 from io import BytesIO
 import uuid
 import os
 import sys
 
-
 # ------------------------------------------------------
-# BASE PATH FIX (WORKS LOCALLY + RENDER)
+# BASE PATH FIX (WORKS LOCALLY + DEPLOYED)
 # ------------------------------------------------------
 CURRENT_FILE = Path(__file__).resolve()
-BASE_DIR = CURRENT_FILE.parent        # this = project root (contains frontend/, backend/)
+BASE_DIR = CURRENT_FILE.parent        # project root (contains frontend/, backend/)
 BACKEND_DIR = BASE_DIR / "backend"
 FRONTEND_DIR = BASE_DIR / "frontend"
 STATIC_DIR = FRONTEND_DIR / "static"
 
-# Allow importing from backend/
+# Allow importing from backend/ (modules like crawler, summarizer live there)
 sys.path.append(str(BACKEND_DIR))
-
 
 # Import backend modules
 from crawler import crawl_website
@@ -30,13 +26,12 @@ from summarizer import summarize_domain, summarize_page
 from md_generator import generate_markdown_content
 from pdf_generator import md_to_pdf_better
 
-
 # ------------------------------------------------------
 # FASTAPI INITIALIZATION
 # ------------------------------------------------------
-app = FastAPI(title="Website Markdown & PDF Generator", version="1.0")
+app = FastAPI(title="Website Markdown + PDF Generator", version="1.0")
 
-
+# Keep CORS permissive for now (change to specific origins if you want)
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
@@ -45,63 +40,35 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-class HTTPSRedirectMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request, call_next):
-        proto = request.headers.get("x-forwarded-proto")
-        if proto == "https":
-            request.scope["scheme"] = "https"
-        response = await call_next(request)
-        return response
-
-app.add_middleware(HTTPSRedirectMiddleware)
-
-# ------------------------------------------------------
-# STATIC FILES (CSS + JS)
-# ------------------------------------------------------
+# Serve static files (if present)
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 else:
     print("⚠ WARNING: static/ folder NOT found at", STATIC_DIR)
 
-
-# ------------------------------------------------------
-# SERVE FRONTEND INDEX.HTML
-# ------------------------------------------------------
+# Serve index.html
 @app.get("/", response_class=HTMLResponse)
 def serve_frontend():
     index_path = FRONTEND_DIR / "index.html"
-
     if not index_path.exists():
-        return f"""
-        <h2>Frontend not found!</h2>
-        <p>Looking for file:</p>
-        <pre>{index_path}</pre>
-        """
-
-    # Read HTML content
+        return f"<h2>Frontend not found!</h2><p>Looking for file:</p><pre>{index_path}</pre>"
     return index_path.read_text(encoding="utf-8")
 
-
-# Store generated docs
+# In-memory store for generated docs
 app.state.docs = {}
-
 
 # ------------------------------------------------------
 # GENERATE DOCUMENTATION
 # ------------------------------------------------------
 @app.post("/generate-docs")
 def generate_docs(request: Request, url: str = Query(...), max_pages: int = Query(10)):
-
     try:
         crawled_pages = crawl_website(url, max_pages)
         if not crawled_pages:
             raise HTTPException(status_code=400, detail="No pages crawled.")
 
         combined_text = "\n".join([p["text"] for p in crawled_pages])
-
         domain_summary = summarize_domain(combined_text, url, len(crawled_pages))
-
         pages_list_md = "\n".join([f"- {p['url']}" for p in crawled_pages])
 
         page_details_md = ""
@@ -114,7 +81,7 @@ def generate_docs(request: Request, url: str = Query(...), max_pages: int = Quer
 ---
 """
 
-        # Generate Markdown
+        # Generate markdown text
         _, md_text = generate_markdown_content(
             domain=url,
             pages_list_md=pages_list_md,
@@ -122,23 +89,22 @@ def generate_docs(request: Request, url: str = Query(...), max_pages: int = Quer
             page_details_md=page_details_md
         )
 
-        # Generate PDF
+        # Generate PDF (in memory)
         pdf_bytes = BytesIO()
         md_to_pdf_better(md_text, pdf_bytes, input_is_text=True)
         pdf_bytes.seek(0)
 
-        # Store
+        # Unique ID + store
         doc_id = str(uuid.uuid4())
         app.state.docs[doc_id] = {"md": md_text, "pdf": pdf_bytes}
 
-        backend_url = str(request.base_url).rstrip("/")
-
+        # IMPORTANT: return RELATIVE paths (leading slash)
         return {
             "message": "Documentation generated successfully!",
             "doc_id": doc_id,
-            "view_md_url": f"{backend_url}/view-md/{doc_id}",
-            "download_md_url": f"{backend_url}/download-md/{doc_id}",
-            "download_pdf_url": f"{backend_url}/download-pdf/{doc_id}",
+            "view_md_url": f"/view-md/{doc_id}",
+            "download_md_url": f"/download-md/{doc_id}",
+            "download_pdf_url": f"/download-pdf/{doc_id}"
         }
 
     except Exception as e:
@@ -146,7 +112,7 @@ def generate_docs(request: Request, url: str = Query(...), max_pages: int = Quer
 
 
 # ------------------------------------------------------
-# ROUTES FOR VIEW/DOWNLOAD
+# VIEW / DOWNLOAD ROUTES
 # ------------------------------------------------------
 @app.get("/view-md/{doc_id}")
 def view_md(doc_id: str):
@@ -159,10 +125,8 @@ def view_md(doc_id: str):
 def download_md(doc_id: str):
     if doc_id not in app.state.docs:
         raise HTTPException(status_code=404, detail="Markdown not found")
-
     md_bytes = BytesIO(app.state.docs[doc_id]["md"].encode("utf-8"))
     md_bytes.seek(0)
-
     return StreamingResponse(
         md_bytes,
         media_type="text/markdown",
@@ -174,10 +138,8 @@ def download_md(doc_id: str):
 def download_pdf(doc_id: str):
     if doc_id not in app.state.docs:
         raise HTTPException(status_code=404, detail="PDF not found")
-
     pdf_bytes = app.state.docs[doc_id]["pdf"]
     pdf_bytes.seek(0)
-
     return StreamingResponse(
         pdf_bytes,
         media_type="application/pdf",
@@ -186,7 +148,7 @@ def download_pdf(doc_id: str):
 
 
 # ------------------------------------------------------
-# ENTRY FOR RENDER + LOCAL
+# ENTRY (local + host)
 # ------------------------------------------------------
 if __name__ == "__main__":
     import uvicorn

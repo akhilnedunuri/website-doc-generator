@@ -2,14 +2,11 @@
 // AUTO DETECT BACKEND URL
 // =======================
 
-// 🔥 CRITICAL: Replace this with your actual, live backend URL on Render.
-// If your service is down or the URL is wrong, the frontend will fail to fetch.
-const GLOBAL_URL = "https://web-doc-generator.pbshope.in"; 
-
+// If running on localhost it will call local backend; otherwise use same origin
 const BACKEND_URL =
     window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-        ? "http://127.0.0.1:8000" // Use 8000 for local uvicorn run
-        : GLOBAL_URL;
+        ? "http://127.0.0.1:8000"
+        : window.location.origin; // use the current origin for deployed app (works with Coolify)
 
 
 // =======================
@@ -27,103 +24,100 @@ let currentMdUrl = "";
 let currentMdDownloadUrl = "";
 let currentPdfDownloadUrl = "";
 
-// Helper to update message text and styling
 function updateMessage(text, isError = false) {
     messageDiv.textContent = text;
-    // Clear previous classes and set new ones for visual feedback
     messageDiv.className = "status-message " + (isError ? "error" : "success");
 }
 
-// Check if backend URL is configured correctly on load
-console.log(`Using Backend URL: ${BACKEND_URL}`);
+// Normalize a returned URL (accept absolute or relative)
+function normalizeReturnedUrl(returned) {
+    if (!returned) return "";
+    returned = returned.trim();
+    // already absolute
+    if (/^https?:\/\//i.test(returned)) return returned;
+    // absolute path (starts with /) -> prefix with origin/back-end
+    if (returned.startsWith("/")) return BACKEND_URL.replace(/\/$/, "") + returned;
+    // otherwise, assume relative and add slash
+    return BACKEND_URL.replace(/\/$/, "") + "/" + returned;
+}
 
+console.log("Using BACKEND_URL =", BACKEND_URL);
 
 // =======================
 // GENERATE DOCUMENTATION
 // =======================
 generateBtn.addEventListener("click", async () => {
     const url = document.getElementById("url").value.trim();
-    const maxPages = document.getElementById("max_pages").value;
+    const maxPages = document.getElementById("max_pages").value || 10;
 
     if (!url) {
         alert("Please enter a website URL");
         return;
     }
 
-    updateMessage("⏳ Generating documentation... This may take a moment.", false); // Use neutral status first
+    updateMessage("⏳ Generating documentation... This may take a while for large sites.");
     actionsDiv.style.display = "none";
     mdContentPre.style.display = "none";
     mdContentPre.textContent = "";
 
     try {
         const endpoint = `${BACKEND_URL}/generate-docs?url=${encodeURIComponent(url)}&max_pages=${maxPages}`;
-
-        const response = await fetch(endpoint, { 
-            method: "POST",
-            // Set a higher timeout in your backend configuration if the process takes too long!
-        });
+        const response = await fetch(endpoint, { method: "POST" });
 
         if (!response.ok) {
-            let errorMsg = `Server responded with status ${response.status}.`;
+            let errMsg = `Server returned ${response.status}`;
             try {
-                // Try to get detailed error from the JSON body sent by FastAPI
-                const err = await response.json();
-                if (err.detail) errorMsg = err.detail;
-            } catch (e) {
-                // If it wasn't JSON, just use the status message
-                errorMsg += " (No detailed error message from server)";
-            }
-            throw new Error(errorMsg);
+                const body = await response.json();
+                if (body.detail) errMsg = body.detail;
+            } catch (_) { /* not JSON */ }
+            throw new Error(errMsg);
         }
 
         const data = await response.json();
-        updateMessage("✅ Documentation generated successfully!", false);
+        updateMessage("✅ Documentation generated!");
 
-        // Links use the base URL provided by the backend, which handles http/https/port correctly
-        currentMdUrl = `${BACKEND_URL}${data.view_md_url}`;
-        currentMdDownloadUrl = `${BACKEND_URL}${data.download_md_url}`;
-        currentPdfDownloadUrl = `${BACKEND_URL}${data.download_pdf_url}`;
+        // Normalize returned urls (works if backend returns absolute OR relative)
+        currentMdUrl = normalizeReturnedUrl(data.view_md_url);
+        currentMdDownloadUrl = normalizeReturnedUrl(data.download_md_url);
+        currentPdfDownloadUrl = normalizeReturnedUrl(data.download_pdf_url);
+
+        console.log("Resolved URLs:", { currentMdUrl, currentMdDownloadUrl, currentPdfDownloadUrl });
 
         actionsDiv.style.display = "block";
-
-    } catch (error) {
-        console.error("Frontend Fetch Error:", error);
-        updateMessage(`❌ Error: Could not reach the server or process the request. Details: ${error.message}`, true);
+    } catch (err) {
+        console.error("Generate error:", err);
+        updateMessage("❌ " + err.message, true);
     }
 });
-
 
 // =======================
 // VIEW MARKDOWN
 // =======================
 viewMdBtn.addEventListener("click", async () => {
     if (!currentMdUrl) return;
+    mdContentPre.textContent = "Loading Markdown...";
+    mdContentPre.style.display = "block";
 
     try {
-        mdContentPre.textContent = "Loading Markdown...";
-        mdContentPre.style.display = "block";
-
-        const response = await fetch(currentMdUrl);
-        if (!response.ok) throw new Error(`Failed to fetch Markdown (${response.status})`);
-
-        const mdText = await response.text();
-        mdContentPre.textContent = mdText;
-    } catch (error) {
-        console.error(error);
-        mdContentPre.textContent = `Error fetching Markdown: ${error.message}`;
+        const res = await fetch(currentMdUrl);
+        if (!res.ok) throw new Error(`Server returned ${res.status}`);
+        const txt = await res.text();
+        mdContentPre.textContent = txt;
+    } catch (err) {
+        console.error("View MD error:", err);
+        mdContentPre.textContent = "Error fetching Markdown: " + err.message;
     }
 });
 
-
 // =======================
-// DOWNLOAD FILES (Triggers direct download via browser)
+// DOWNLOAD FILES
 // =======================
 downloadMdBtn.addEventListener("click", () => {
-    if (!currentMdDownloadUrl) return;
+    if (!currentMdDownloadUrl) return alert("No markdown available");
     window.open(currentMdDownloadUrl, "_blank");
 });
 
 downloadPdfBtn.addEventListener("click", () => {
-    if (!currentPdfDownloadUrl) return;
+    if (!currentPdfDownloadUrl) return alert("No PDF available");
     window.open(currentPdfDownloadUrl, "_blank");
 });
