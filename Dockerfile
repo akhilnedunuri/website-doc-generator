@@ -56,7 +56,7 @@ COPY . .
 # -------------------------------
 # Expose port (Coolify uses $PORT automatically)
 # -------------------------------
-EXPOSE 8000
+EXPOSE 3000
 
 # -------------------------------
 # Start FastAPI app
