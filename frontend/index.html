@@ -1,52 +1,176 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Web Doc Generator</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="static/style.css">
-</head>
-<body>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link rel="stylesheet" href="static/style.css" />
+  </head>
+  <body>
 
-    <div class="container">
-        <header>
-            <i class="fas fa-file-code icon-header"></i>
-            <h1>Website Documentation Generator</h1>
-            <p>Generate high-quality documentation (Markdown & PDF) from any website.</p>
-        </header>
+    <div style="width: 800px; height: 100%; margin: 0px auto">
 
-        <section class="input-form">
-            <div class="input-group">
-                <label for="url"><i class="fas fa-globe"></i> Website URL</label>
-                <input type="text" id="url" placeholder="https://example.com/blog" value="https://docs.fastapi.tiangolo.com/">
-            </div>
+            <div
+      style="
+        background-color: #041d77;
+        height: 95px;
+        width: 100%;
+        text-align: center;
+        padding-top: 5px;
+      "
+    >
+      <a href="#" style="text-decoration: none">
+        <img
+          src="https://pbshope.com/assets/img/Option-Logo.gif"
+          alt="85x85"
+          width="85"
+          height="85"
+          style="
+            display: block;
+            background-color: #e6e6e6;
+            border-radius: 60px;
+            height: 85px;
+            border: 2px #e6e6e6;
+            margin: 0px auto;
+            border-style: solid;
+          "
+          mc:edit="Image-0"
+        />
+      </a>
+    </div>
 
-            <div class="input-group">
-                <label for="max_pages"><i class="fas fa-list-ol"></i> Max Pages to Crawl</label>
-                <input type="number" id="max_pages" value="10" min="1">
-            </div>
 
-            <button id="generateBtn" class="primary-btn">
-                <i class="fas fa-cogs"></i> Generate Documentation
-            </button>
-        </section>
+        <div
+        style="
+          background-image: url('https://pbshope.com/assets/img/slider/Total-IT-Care.jpg');
+          background-size: cover;
+          background-position: top;
+          width: 100%;
+          height: 230px;
+          text-align: center;
+          padding-top: 10px;
+        "
+      >
+        <h1
+          style="
+            color: #ffffff;
+            font-family: Montserrat, sans-serif;
+            font-size: 25px;
+            font-weight: 700;
+            line-height: 40px;
+            margin: 0px 50px 20px 50px;
+          "
+        >
+          Total I.T. Care<sup>TM</sup> <br />
+          YOU FOCUS ON BUSINESS. WE'LL FOCUS ON I.T.>
+        </h1>
+        <h6
+          style="
+            color: #ffffff;
+            font-family: Montserrat, sans-serif;
+            font-size: 16px;
+            line-height: 19px;
+            font-weight: 400;
+            margin: 20px 50px 0px 50px;
+          "
+        >
+          Unleash your business potential while we ensure your technology is
+          streamlined and secure. Experience the freedom to innovate and grow
+          with PBS Total I.T. Care<sup>TM</sup>.
+        </h6>
+      </div>
 
-        <div id="message" class="status-message"></div>
 
-        <section id="actions" class="action-buttons" style="display:none;">
-            <h3>Download & View</h3>
-            <div class="button-row">
-                <button id="viewMdBtn" class="secondary-btn"><i class="fas fa-eye"></i> View Markdown</button>
-                <button id="downloadMdBtn" class="download-btn"><i class="fas fa-file-alt"></i> Download .md</button>
-                <button id="downloadPdfBtn" class="download-btn"><i class="fas fa-file-pdf"></i> Download .pdf</button>
-            </div>
-        </section>
+      
+      <div
+        style="
+          background-color: #f6f6f6;
+          height: 100%;
+          width: auto;
+          text-align: left;
+          padding: 40px;
+          font-family: Montserrat, sans-serif;
+          line-height: 26px;
+        "
+      >
 
-        <pre id="mdContent" class="markdown-preview" style="display:none;"></pre>
+      <header>
+        <i class="fas fa-file-code icon-header"></i>
+        <h1 style="color: #041d77;">RAG SEO Content  for Your Website</h1>
+        <p>
+          Generate high-quality documentation (Markdown & PDF) from any website.
+        </p>
+      </header>
+
+      <section class="input-form">
+        <div class="input-group">
+          <label for="url"><i class="fas fa-globe"></i> Website URL</label>
+          <input
+            type="text"
+            id="url"
+            placeholder="https://example.com/blog"
+            value="https://docs.fastapi.tiangolo.com/"
+          />
+        </div>
+
+        <div class="input-group">
+          <label for="max_pages"
+            ><i class="fas fa-list-ol"></i> Max Pages to Crawl</label
+          >
+          <input type="number" id="max_pages" value="10" min="1" />
+        </div>
+
+        <button id="generateBtn" class="primary-btn">
+          <i class="fas fa-cogs"></i> Generate Documentation
+        </button>
+      </section>
+
+      <div id="message" class="status-message"></div>
+
+      <section id="actions" class="action-buttons" style="display: none">
+        <h3>Download & View</h3>
+        <div class="button-row">
+          <button id="viewMdBtn" class="secondary-btn">
+            <i class="fas fa-eye"></i> View Markdown
+          </button>
+          <button id="downloadMdBtn" class="download-btn">
+            <i class="fas fa-file-alt"></i> Download .md
+          </button>
+          <button id="downloadPdfBtn" class="download-btn">
+            <i class="fas fa-file-pdf"></i> Download .pdf
+          </button>
+        </div>
+      </section>
+
+      <pre id="mdContent" class="markdown-preview" style="display: none"></pre>
+
+      </div>
+
+          <div
+      style="
+        background-color: #18359d;
+        color: #ffffff;
+        height: 55px;
+        width: 100%;
+        text-align: center;
+        padding: 15px 0px;
+        font-family: Montserrat, sans-serif;
+        line-height: 28px;
+      "
+    >
+      © PBS, 2022. All rights reserved worldwide.
+    </div>
+
     </div>
 
     <script src="static/script.js"></script>
-</body>
+  </body>
 </html>

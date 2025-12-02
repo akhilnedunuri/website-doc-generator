@@ -15,7 +15,7 @@
     box-sizing: border-box;
 }
 
-body {
+/* body {
     font-family: 'Poppins', sans-serif;
     background: var(--bg-color-dark);
     color: var(--text-color);
@@ -25,7 +25,17 @@ body {
     padding: 60px 20px;
     min-height: 100vh;
     margin: 0;
+} */
+ body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--bg-color-dark);
+    color: var(--text-color);
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    display: block; /* ❗ Remove flex */
 }
+
 
 /* Container and Header */
 .container {
@@ -47,7 +57,7 @@ header {
 
 .icon-header {
     font-size: 3rem;
-    color: var(--accent-blue);
+    color: #041d77;
     margin-bottom: 10px;
 }
 
@@ -58,7 +68,7 @@ h1 {
 }
 
 header p {
-    color: #b0b0b0;
+    color: #6c6c6c;
     font-weight: 300;
 }
 
@@ -78,7 +88,7 @@ header p {
 label {
     font-weight: 600;
     margin-bottom: 5px;
-    color: var(--accent-blue);
+    color: #041d77;
 }
 
 label i {
@@ -87,11 +97,11 @@ label i {
 
 input {
     width: 100%;
-    padding: 12px 15px;
-    border: 1px solid var(--border-color);
+    padding: 14px 15px;
+    border: 1px solid #707070;
     border-radius: 8px;
-    background: var(--bg-color-dark);
-    color: var(--text-color);
+    background: #ffffff;
+    color: #707070;
     font-size: 1rem;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
@@ -122,14 +132,15 @@ button i {
 }
 
 .primary-btn {
-    background: var(--accent-blue);
-    color: var(--bg-color-dark);
+    background: #041d77;
+    color: #fff;
     width: 100%;
     margin-top: 10px;
+    padding: 18px 5px;
 }
 
 .primary-btn:hover {
-    background: var(--accent-hover);
+    background: #1b40c5;
     transform: translateY(-1px);
 }
 
